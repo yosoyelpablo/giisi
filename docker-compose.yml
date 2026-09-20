@@ -1,0 +1,38 @@
+# GIISI — Sistema de gestión de incidentes de seguridad informática para pequeñas empresas
+# Levantar todo:  docker compose up --build
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: giisi
+      POSTGRES_USER: giisi
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-giisi_dev}
+    volumes:
+      - giisi_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U giisi -d giisi"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  api:
+    build: ./backend
+    environment:
+      DATABASE_URL: postgresql+psycopg2://giisi:${POSTGRES_PASSWORD:-giisi_dev}@db:5432/giisi
+      JWT_SECRET: ${JWT_SECRET:-cambiar-en-produccion}
+      WEBHOOK_API_KEY: ${WEBHOOK_API_KEY:-clave-webhook-desarrollo}
+      SEED_PASSWORD: ${SEED_PASSWORD:-Giisi!2026demo}
+    ports: ["8000:8000"]
+    depends_on:
+      db:
+        condition: service_healthy
+
+  frontend:
+    build: ./frontend
+    environment:
+      API_URL: http://api:8000
+    ports: ["8501:8501"]
+    depends_on: [api]
+
+volumes:
+  giisi_pgdata:
