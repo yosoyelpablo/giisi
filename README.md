@@ -34,7 +34,7 @@ Flujo completo de extremo a extremo para un incidente de **ransomware**:
 docker compose up --build
 ```
 
-- Interfaz web: http://localhost:8501
+- Interfaz web: http://localhost:8501  (KPI: tiempo de triaje y tiempo de respuesta medidos desde la recepción de la alerta; la latencia evento→alerta es de la fuente externa y se informa solo como contexto)
 - API y documentación OpenAPI: http://localhost:8000/docs
 
 Usuarios de demostración (contraseña `Giisi!2026demo`, configurable con `SEED_PASSWORD`):

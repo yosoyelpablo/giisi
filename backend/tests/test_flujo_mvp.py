@@ -29,7 +29,8 @@ def test_flujo_ransomware_extremo_a_extremo(client, operador, coordinador, geren
     assert inc["categoria_clave"] == "codigo_malicioso"          # HU-003
     assert inc["a_revisar"] is False and inc["confianza_clasificacion"] >= config.CLASSIFY_CONFIDENCE_THRESHOLD
     assert inc["severidad"] == "Crítica"                          # HU-004: nivel 12 x info 3 x activo crit 5
-    assert inc["mttd_min"] is not None                            # tiempo entre ocurrencia y detección
+    assert inc["latencia_alerta_min"] is not None                  # latencia de la fuente externa (contexto)
+    assert inc["tiempo_triaje_seg"] is not None and inc["tiempo_triaje_seg"] < 5   # RNF 5: triaje automático < 5 s
 
     # 2) deduplicación (HU-001 c3): misma alerta -> se asocia, no crea otro incidente
     r2 = client.post("/webhook", json=ALERTA_RANSOMWARE, headers={"X-API-Key": "clave-test"})
@@ -126,6 +127,7 @@ def test_metricas(client, gerente):
     m = client.get("/metricas", headers=gerente).json()
     assert m["incidentes_totales"] >= 3 and m["integridad_audit_log"] is True
     assert m["mttr_promedio_min"] is not None and m["tasa_clasificacion_automatica"] is not None
+    assert m["tiempo_triaje_promedio_seg"] is not None and m["latencia_alerta_promedio_min"] is not None
 
 
 # ------------------------------------------------------------------ motor de reglas (unitario)

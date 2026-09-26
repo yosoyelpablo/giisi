@@ -35,9 +35,9 @@ def a_out(session: Session, inc: Incidente) -> IncidenteOut:
         id_incidente=inc.id_incidente, titulo=inc.titulo, descripcion=inc.descripcion, estado=inc.estado,
         severidad=inc.severidad, categoria=cat.nombre if cat else None, categoria_clave=cat.clave if cat else None,
         activo=act.nombre if act else None, asignado=usr.nombre if usr else None,
-        fecha_ocurrencia=inc.fecha_ocurrencia, fecha_deteccion=inc.fecha_deteccion,
+        fecha_ocurrencia=inc.fecha_ocurrencia, fecha_recepcion=inc.fecha_recepcion,
         fecha_contencion=inc.fecha_contencion, fecha_cierre=inc.fecha_cierre,
-        mttd_min=inc.mttd_min, mttr_min=inc.mttr_min, confianza_clasificacion=inc.confianza_clasificacion,
+        latencia_alerta_min=inc.latencia_alerta_min, tiempo_triaje_seg=inc.tiempo_triaje_seg, mttr_min=inc.mttr_min, confianza_clasificacion=inc.confianza_clasificacion,
         a_revisar=inc.a_revisar, origen=inc.origen)
 
 
@@ -63,6 +63,7 @@ def clasificar_y_priorizar(session: Session, inc: Incidente, texto: str, nivel: 
     if sev["severidad"] in ("Alta", "Crítica"):
         registrar(session, f"Notificó al coordinador de respuesta (severidad {sev['severidad']})",
                   actor="sistema", id_incidente=inc.id_incidente)
+    inc.tiempo_triaje_seg = round((utcnow() - inc.fecha_recepcion).total_seconds(), 3)   # T0 = recepción
     session.add(inc); session.commit(); session.refresh(inc)
 
 
@@ -86,7 +87,7 @@ def ingestar_alerta(session: Session, alerta: AlertaIn) -> tuple[Incidente, bool
     inc = Incidente(titulo=f"{alerta.regla.descripcion} en {activo.nombre}", descripcion=alerta.detalle,
                     id_activo=activo.id_activo, fecha_ocurrencia=alerta.timestamp.replace(tzinfo=None),
                     origen="webhook")
-    inc.mttd_min = _minutos(inc.fecha_ocurrencia, inc.fecha_deteccion)
+    inc.latencia_alerta_min = _minutos(inc.fecha_ocurrencia, inc.fecha_recepcion)
     session.add(inc); session.commit(); session.refresh(inc)
     session.add(Alerta(origen=alerta.origen, id_alerta_origen=alerta.id_alerta_origen,
                        payload_json=alerta.model_dump_json(), id_incidente=inc.id_incidente))
@@ -103,7 +104,7 @@ def crear_manual(session: Session, datos: IncidenteManualIn, usuario) -> Inciden
     activo = _activo_por_nombre(session, datos.activo)
     inc = Incidente(titulo=datos.titulo, descripcion=datos.descripcion, id_activo=activo.id_activo,
                     fecha_ocurrencia=datos.fecha_ocurrencia, origen="manual")
-    inc.mttd_min = _minutos(inc.fecha_ocurrencia, inc.fecha_deteccion)
+    inc.latencia_alerta_min = _minutos(inc.fecha_ocurrencia, inc.fecha_recepcion)
     session.add(inc); session.commit(); session.refresh(inc)
     registrar(session, "Incidente registrado manualmente en estado «Nuevo»", actor=usuario.email,
               id_incidente=inc.id_incidente, id_usuario=usuario.id_usuario)
@@ -120,7 +121,7 @@ def cambiar_estado(session: Session, inc: Incidente, nuevo: str, usuario) -> Inc
     anterior, inc.estado = inc.estado, nuevo
     if nuevo == "Contenido" and inc.fecha_contencion is None:
         inc.fecha_contencion = utcnow()
-        inc.mttr_min = _minutos(inc.fecha_deteccion, inc.fecha_contencion)
+        inc.mttr_min = _minutos(inc.fecha_recepcion, inc.fecha_contencion)
     session.add(inc); session.commit(); session.refresh(inc)
     registrar(session, f"Cambió el estado de «{anterior}» a «{nuevo}»", actor=usuario.email,
               id_incidente=inc.id_incidente, id_usuario=usuario.id_usuario)
@@ -235,13 +236,15 @@ def metricas(session: Session) -> MetricasOut:
     for i in incs:
         por_estado[i.estado] = por_estado.get(i.estado, 0) + 1
         if i.severidad: por_sev[i.severidad] = por_sev.get(i.severidad, 0) + 1
-    mttd = [i.mttd_min for i in incs if i.mttd_min is not None]
+    lat = [i.latencia_alerta_min for i in incs if i.latencia_alerta_min is not None]
+    tri = [i.tiempo_triaje_seg for i in incs if i.tiempo_triaje_seg is not None]
     mttr = [i.mttr_min for i in incs if i.mttr_min is not None]
     clasif = [i for i in incs if i.confianza_clasificacion is not None]
     tasa = round(100.0 * sum(1 for i in clasif if not i.a_revisar) / len(clasif), 1) if clasif else None
     return MetricasOut(
         incidentes_totales=len(incs), incidentes_abiertos=sum(1 for i in incs if i.estado != "Cerrado"),
         por_estado=por_estado, por_severidad=por_sev,
-        mttd_promedio_min=round(sum(mttd) / len(mttd), 1) if mttd else None,
+        latencia_alerta_promedio_min=round(sum(lat) / len(lat), 1) if lat else None,
+        tiempo_triaje_promedio_seg=round(sum(tri) / len(tri), 2) if tri else None,
         mttr_promedio_min=round(sum(mttr) / len(mttr), 1) if mttr else None,
         tasa_clasificacion_automatica=tasa, integridad_audit_log=verificar(session)["integra"])

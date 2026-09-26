@@ -61,12 +61,15 @@ def pantalla_panel():
     st.markdown("## Panel principal")
     m = api("GET", "/metricas").json()
     c1, c2, c3, c4 = st.columns(4)
-    c1.metric("MTTD promedio", f"{m['mttd_promedio_min']:.0f} min" if m["mttd_promedio_min"] is not None else "—")
-    c2.metric("MTTR promedio", f"{m['mttr_promedio_min']:.0f} min" if m["mttr_promedio_min"] is not None else "—")
+    c1.metric("Tiempo de triaje", f"{m['tiempo_triaje_promedio_seg']:.2f} s" if m["tiempo_triaje_promedio_seg"] is not None else "—",
+              help="Desde la recepción de la alerta hasta la clasificación y la severidad (lo mejora el prototipo)")
+    c2.metric("Tiempo de respuesta (MTTR)", f"{m['mttr_promedio_min']:.0f} min" if m["mttr_promedio_min"] is not None else "—",
+              help="Desde la recepción de la alerta hasta la contención (lo mejora el prototipo)")
     c3.metric("Incidentes abiertos", m["incidentes_abiertos"])
     c4.metric("Clasificación automática", f"{m['tasa_clasificacion_automatica']:.0f} %" if m["tasa_clasificacion_automatica"] is not None else "—")
     st.caption(("✅ Audit log íntegro" if m["integridad_audit_log"] else "⚠️ Audit log con inconsistencias")
-               + f" · {m['incidentes_totales']} incidentes en total")
+               + f" · {m['incidentes_totales']} incidentes en total"
+               + (f" · latencia de la fuente externa (evento → alerta): {m['latencia_alerta_promedio_min']:.0f} min, fuera del alcance del prototipo" if m["latencia_alerta_promedio_min"] is not None else ""))
     st.markdown("### Tablero de incidentes (kanban)")
     incs = api("GET", "/incidentes").json()
     cols = st.columns(len(ESTADOS))
@@ -105,9 +108,10 @@ def pantalla_detalle():
     with izq:
         st.markdown("#### Información")
         st.write(inc["descripcion"] or "—")
-        st.write(f"**Detección:** {inc['fecha_deteccion'][:16].replace('T', ' ')} UTC")
-        st.write(f"**MTTD:** {inc['mttd_min']:.0f} min" if inc["mttd_min"] is not None else "**MTTD:** —")
-        st.write(f"**MTTR:** {inc['mttr_min']:.0f} min" if inc["mttr_min"] is not None else "**MTTR:** — (sin contención aún)")
+        st.write(f"**Recepción de la alerta (T0):** {inc['fecha_recepcion'][:16].replace('T', ' ')} UTC")
+        st.write(f"**Latencia de la fuente externa (evento → alerta):** {inc['latencia_alerta_min']:.0f} min — contexto, fuera del prototipo" if inc["latencia_alerta_min"] is not None else "**Latencia de la fuente externa:** —")
+        st.write(f"**Tiempo de triaje:** {inc['tiempo_triaje_seg']:.2f} s" if inc["tiempo_triaje_seg"] is not None else "**Tiempo de triaje:** —")
+        st.write(f"**Tiempo de respuesta (MTTR):** {inc['mttr_min']:.0f} min" if inc["mttr_min"] is not None else "**Tiempo de respuesta (MTTR):** — (sin contención aún)")
         if inc["confianza_clasificacion"] is not None:
             st.write(f"**Confianza de clasificación:** {inc['confianza_clasificacion']:.2f}")
 

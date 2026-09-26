@@ -69,12 +69,13 @@ class Incidente(SQLModel, table=True):
     severidad: Optional[str] = None
     estado: str = "Nuevo"
     id_usuario_asig: Optional[int] = Field(default=None, foreign_key="usuario.id_usuario")
-    fecha_ocurrencia: Optional[datetime] = None    # momento del evento según la fuente
-    fecha_deteccion: datetime = Field(default_factory=utcnow)
+    fecha_ocurrencia: Optional[datetime] = None    # momento del evento según la fuente externa
+    fecha_recepcion: datetime = Field(default_factory=utcnow)   # T0 del prototipo: recepción de la alerta
     fecha_contencion: Optional[datetime] = None
     fecha_cierre: Optional[datetime] = None
-    mttd_min: Optional[float] = None
-    mttr_min: Optional[float] = None
+    latencia_alerta_min: Optional[float] = None    # evento -> recepción: latencia de la fuente externa (contexto, no es meta)
+    tiempo_triaje_seg: Optional[float] = None      # recepción -> clasificación + severidad (lo mejora el prototipo)
+    mttr_min: Optional[float] = None               # recepción -> contención (lo mejora el prototipo)
     confianza_clasificacion: Optional[float] = None
     a_revisar: bool = False                         # clasificación por debajo del umbral (HU-003)
     origen: str = "manual"                          # manual | webhook

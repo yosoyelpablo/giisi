@@ -78,10 +78,11 @@ class IncidenteOut(BaseModel):
     activo: Optional[str]
     asignado: Optional[str]
     fecha_ocurrencia: Optional[datetime]
-    fecha_deteccion: datetime
+    fecha_recepcion: datetime
     fecha_contencion: Optional[datetime]
     fecha_cierre: Optional[datetime]
-    mttd_min: Optional[float]
+    latencia_alerta_min: Optional[float]
+    tiempo_triaje_seg: Optional[float]
     mttr_min: Optional[float]
     confianza_clasificacion: Optional[float]
     a_revisar: bool
@@ -124,7 +125,8 @@ class MetricasOut(BaseModel):
     incidentes_abiertos: int
     por_estado: dict[str, int]
     por_severidad: dict[str, int]
-    mttd_promedio_min: Optional[float]
+    latencia_alerta_promedio_min: Optional[float]
+    tiempo_triaje_promedio_seg: Optional[float]
     mttr_promedio_min: Optional[float]
     tasa_clasificacion_automatica: Optional[float]
     integridad_audit_log: bool
