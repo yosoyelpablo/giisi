@@ -47,7 +47,7 @@ PLAYBOOKS = {
     "codigo_malicioso": ("Respuesta ante ransomware", [
         ("Aislar el activo afectado de la red", "Responder", "operador"),
         ("Preservar la evidencia (imagen de disco y volcado de memoria)", "Responder", "operador"),
-        ("Identificar la variante y el vector de entrada", "Detectar", "coordinador"),
+        ("Identificar la variante y el vector de entrada", "Responder", "coordinador"),
         ("Notificar a la gerencia y evaluar las obligaciones de notificación externa", "Responder", "coordinador"),
         ("Erradicar el software malicioso y cerrar el vector de entrada", "Responder", "operador"),
         ("Restaurar los servicios desde un respaldo verificado", "Recuperar", "operador"),
@@ -56,14 +56,14 @@ PLAYBOOKS = {
     ]),
     "acceso_no_autorizado": ("Respuesta ante acceso no autorizado", [
         ("Deshabilitar la cuenta comprometida y revocar sus sesiones", "Responder", "operador"),
-        ("Identificar el alcance del acceso y los recursos consultados", "Detectar", "coordinador"),
+        ("Identificar el alcance del acceso y los recursos consultados", "Responder", "coordinador"),
         ("Restablecer credenciales y exigir segundo factor", "Responder", "operador"),
         ("Verificar la ausencia de persistencia en los sistemas afectados", "Recuperar", "coordinador"),
         ("Registrar las lecciones aprendidas y cerrar el incidente", "Recuperar", "coordinador"),
     ]),
     "filtracion_datos": ("Respuesta ante filtración de datos", [
         ("Bloquear el canal de exfiltración identificado", "Responder", "operador"),
-        ("Determinar el tipo y el volumen de la información afectada", "Detectar", "coordinador"),
+        ("Determinar el tipo y el volumen de la información afectada", "Responder", "coordinador"),
         ("Notificar a la gerencia y evaluar obligaciones legales de notificación", "Responder", "coordinador"),
         ("Remediar la causa raíz y reforzar los controles", "Recuperar", "operador"),
         ("Registrar las lecciones aprendidas y cerrar el incidente", "Recuperar", "coordinador"),
