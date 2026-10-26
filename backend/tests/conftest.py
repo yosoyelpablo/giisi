@@ -3,6 +3,8 @@ import os
 os.environ["DATABASE_URL"] = "sqlite:///:memory:"
 os.environ["BCRYPT_ROUNDS"] = "4"
 os.environ["WEBHOOK_API_KEY"] = "clave-test"
+import tempfile
+os.environ["AUDIT_EXPORT_DIR"] = tempfile.mkdtemp(prefix="giisi-ref-")
 
 import pytest
 from fastapi.testclient import TestClient

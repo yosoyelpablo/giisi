@@ -6,7 +6,7 @@ from typing import Optional
 from fastapi import HTTPException
 from sqlmodel import Session, select
 from . import config, rules
-from .audit import registrar, verificar
+from .audit import guardar_referencia, registrar, verificar
 from .models import (Incidente, Alerta, CategoriaNist, Activo, Usuario, Playbook, PasoPlaybook,
                      EjecucionPlaybook, PasoEjecutado, LeccionAprendida, TRANSICIONES, SEVERIDADES)
 from .schemas import AlertaIn, IncidenteManualIn, IncidenteOut, EjecucionOut, PasoOut, MetricasOut
@@ -266,6 +266,11 @@ def cerrar(session: Session, inc: Incidente, leccion: str, recomendacion: str, u
     session.add(inc); session.commit(); session.refresh(inc)
     registrar(session, f"Registró lecciones aprendidas y cerró el incidente: {leccion[:120]}",
               actor=usuario.email, id_incidente=inc.id_incidente, id_usuario=usuario.id_usuario)
+    try:   # referencia externa firmada al cerrar cada incidente (RNF 3)
+        f = guardar_referencia(session)
+        registrar(session, f"Emitió la referencia externa firmada del audit log ({f.name})", id_incidente=inc.id_incidente)
+    except ValueError as e:
+        registrar(session, f"No emitió la referencia externa firmada: {e}", id_incidente=inc.id_incidente)
     return inc
 
 

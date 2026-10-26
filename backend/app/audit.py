@@ -18,6 +18,7 @@ import hmac
 import json
 import hashlib
 from datetime import datetime
+from pathlib import Path
 from .util import utcnow
 from typing import Optional
 from sqlmodel import Session, select
@@ -96,6 +97,15 @@ def exportar_firmado(session: Session) -> dict:
                   "registros": v["registros"], "ultimo_id": ultimo.id_accion if ultimo else 0,
                   "hash_cabeza": v["ultimo_hash"]}
     return {"referencia": referencia, "firma": _firmar(referencia), "algoritmo": "HMAC-SHA256"}
+
+
+def guardar_referencia(session: Session) -> Path:
+    """Emite la referencia firmada y la guarda en AUDIT_EXPORT_DIR (se invoca al cerrar cada incidente)."""
+    exp = exportar_firmado(session)
+    destino = Path(config.AUDIT_EXPORT_DIR); destino.mkdir(parents=True, exist_ok=True)
+    f = destino / f"referencia_{exp['referencia']['ultimo_id']}_{utcnow():%Y%m%d_%H%M%S}.json"
+    f.write_text(json.dumps(exp, ensure_ascii=False, indent=2), encoding="utf-8")
+    return f
 
 
 def verificar_contra_exportacion(session: Session, exportacion: dict) -> dict:

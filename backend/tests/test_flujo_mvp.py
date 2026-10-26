@@ -1,5 +1,6 @@
 """Pruebas del producto mínimo viable: flujo ransomware de extremo a extremo (E2, sección MVP),
 integridad del audit log (HU-007), RBAC (HU-008), clasificación (HU-003) y bloqueo de cuenta."""
+from pathlib import Path
 from sqlmodel import Session, select
 from app.database import engine
 from app.models import AccionRespuesta
@@ -17,6 +18,8 @@ def test_webhook_rechaza_sin_clave(client):
 def test_webhook_rechaza_payload_invalido(client):
     r = client.post("/webhook", json={"origen": "wazuh"}, headers={"X-API-Key": "clave-test"})
     assert r.status_code == 422          # HU-001 c2: formato inválido -> error, sin crear incidente
+    with Session(engine) as s:            # ... y el intento queda registrado en el audit log
+        assert s.exec(select(AccionRespuesta).where(AccionRespuesta.descripcion.like("Rechazó una alerta con formato inválido%"))).first()
 
 
 def test_flujo_ransomware_extremo_a_extremo(client, operador, coordinador, gerente):
@@ -76,10 +79,13 @@ def test_flujo_ransomware_extremo_a_extremo(client, operador, coordinador, geren
     textos = " | ".join(a["descripcion"] for a in log)
     for esperado in ("Alerta recibida", "Clasificó como «Código malicioso»", "Calculó severidad Crítica",
                      "Notificó al coordinador", "Inició el playbook", "Completó el paso 1", "Contenido",
-                     "Resuelto", "cerró el incidente"):
+                     "Resuelto", "cerró el incidente", "Emitió la referencia externa firmada"):
         assert esperado in textos, esperado
-    for a, b in zip(log, log[1:]):
-        assert b["hash_previo"] == a["hash_actual"] or True  # dentro del incidente puede haber registros de otros en el medio
+    ids = [a["id_accion"] for a in log]
+    assert ids == sorted(ids)                                     # en orden; entre ellos puede haber registros de otros incidentes
+    with Session(engine) as s:
+        assert verificar(s)["integra"] is True                    # la cadena completa, que los incluye, está íntegra
+    assert list(Path(config.AUDIT_EXPORT_DIR).glob("referencia_*.json"))   # referencia emitida al cerrar (RNF 3)
 
 
 # ------------------------------------------------------------------ HU-007 / RNF 3: integridad verificable
@@ -146,3 +152,5 @@ def test_bloqueo_de_cuenta(client):
         assert client.post("/auth/login", json={"email": "gerente@giisi.local", "password": "incorrecta"}).status_code == 401
     r = client.post("/auth/login", json={"email": "gerente@giisi.local", "password": config.SEED_PASSWORD})
     assert r.status_code == 423
+    with Session(engine) as s:
+        assert s.exec(select(AccionRespuesta).where(AccionRespuesta.descripcion.like("Bloqueó la cuenta gerente@giisi.local%"))).first()

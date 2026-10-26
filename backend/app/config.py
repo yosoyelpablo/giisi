@@ -22,6 +22,8 @@ LOGIN_LOCK_MINUTES = 15
 # (variable de entorno o gestor de secretos), separada de JWT_SECRET: quien solo accede a la base no puede
 # firmar una referencia externa válida.
 AUDIT_EXPORT_KEY = os.getenv("AUDIT_EXPORT_KEY", "cambiar-en-produccion-clave-de-exportacion")
+# Carpeta donde se guarda la referencia emitida al cerrar cada incidente (en producción, se sube al almacenamiento inmutable).
+AUDIT_EXPORT_DIR = os.getenv("AUDIT_EXPORT_DIR", "exportaciones")
 
 # Clave compartida que deben presentar las fuentes externas de detección (Wazuh, webhooks).
 WEBHOOK_API_KEY = os.getenv("WEBHOOK_API_KEY", "clave-webhook-desarrollo")

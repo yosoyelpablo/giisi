@@ -76,13 +76,30 @@ python scripts/medir_triaje.py manual       # la misma alerta clasificada a mano
 python scripts/medir_triaje.py resumen
 ```
 
+### Tiempo de respuesta en condiciones equivalentes
+
+`scripts/medir_respuesta.py` mide, sobre los tres escenarios que tienen playbook (ransomware, acceso no autorizado y
+filtración de datos), el tiempo desde la recepción de la alerta hasta el **inicio de la contención** —el registro del
+primer paso del playbook—, con el prototipo y en forma manual (la misma guía y los mismos playbooks como documento).
+Guarda el corte del triaje, escribe cada escenario apenas se mide y exporta el audit log de los incidentes medidos.
+
+```bash
+python scripts/medir_respuesta.py prototipo
+python scripts/medir_respuesta.py manual
+python scripts/medir_respuesta.py resumen      # por escenario: con tres pares el resultado es descriptivo
+```
+
+Los resultados de las dos mediciones (26/10/2026) están en `scripts/resultados/`.
+
 ### Límite de la cadena de hashes y referencia externa firmada
 
 La cadena detecta la modificación o eliminación de registros, pero quien tenga acceso de escritura a la base podría
 alterar un registro y recalcular toda la cadena: el resultado vuelve a ser coherente. Por eso el sistema emite una
 **referencia externa** (cantidad de registros, último id y hash de cabeza) firmada con HMAC-SHA256 con una clave que
-se custodia fuera de la base (`AUDIT_EXPORT_KEY`), y esa referencia se guarda en un almacenamiento inmutable (bucket
-con bloqueo de objetos). Comparar la cadena actual con una referencia anterior detecta la reconstrucción
+se custodia fuera de la base (`AUDIT_EXPORT_KEY`). El sistema la emite al cerrar cada incidente (en `AUDIT_EXPORT_DIR`,
+por defecto `exportaciones/`) y el administrador puede emitirla a pedido; en producción, además, se emitiría a diario y se
+subiría a un almacenamiento inmutable (bucket con bloqueo de objetos), lo que queda como etapa siguiente. Comparar la
+cadena actual con una referencia anterior detecta la reconstrucción de los registros que esa referencia abarca
 (ver la prueba `test_reconstruir_toda_la_cadena_engana_a_la_verificacion_interna_pero_no_a_la_exportacion`).
 
 ```bash

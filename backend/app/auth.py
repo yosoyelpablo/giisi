@@ -72,6 +72,10 @@ def authenticate(session: Session, email: str, password: str) -> Usuario:
         if user.intentos_fallidos >= config.LOGIN_MAX_ATTEMPTS:
             user.bloqueado_hasta = utcnow() + timedelta(minutes=config.LOGIN_LOCK_MINUTES)
             user.intentos_fallidos = 0
+            session.add(user); session.commit()
+            from .audit import registrar
+            registrar(session, f"Bloqueó la cuenta {user.email} durante {config.LOGIN_LOCK_MINUTES} minutos tras "
+                      f"{config.LOGIN_MAX_ATTEMPTS} intentos fallidos de inicio de sesión", id_usuario=user.id_usuario)
         session.add(user); session.commit()
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Credenciales inválidas")
     user.intentos_fallidos = 0; user.bloqueado_hasta = None

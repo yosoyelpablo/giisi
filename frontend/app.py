@@ -229,7 +229,8 @@ def pantalla_playbooks():
 
 def pantalla_integridad():
     st.markdown("## Verificación de integridad del audit log")
-    st.write("Recorre toda la cadena de hashes y recalcula cada registro. Cualquier modificación o eliminación se detecta.")
+    st.write("Recorre toda la cadena de hashes y recalcula cada registro: detecta la modificación o eliminación de registros, "
+             "salvo que se recalcule toda la cadena; para ese caso está la referencia externa firmada (abajo).")
     if st.button("Verificar ahora", type="primary"):
         r = api("GET", "/auditoria/verificar")
         st.session_state.verificacion = r.json() if r.status_code == 200 else None
@@ -242,9 +243,10 @@ def pantalla_integridad():
 
     st.markdown("### Referencia externa firmada")
     st.write("La cadena de hashes detecta alteraciones, pero quien tenga acceso de escritura a la base podría recalcularla "
-             "entera. Por eso se exporta periódicamente el estado de la cadena firmado (HMAC-SHA256, con una clave que no está "
-             "en la base) y se guarda en un almacenamiento inmutable. Comparar la cadena actual con una exportación anterior "
-             "detecta una reconstrucción.")
+             "entera. Por eso el sistema emite el estado de la cadena firmado (HMAC-SHA256, con una clave que no está en la "
+             "base) al cerrar cada incidente y a pedido del administrador, para conservarlo fuera de su alcance (en producción, "
+             "en un almacenamiento inmutable). Comparar la cadena actual con una referencia anterior detecta la reconstrucción "
+             "de los registros que esa referencia abarca.")
     c1, c2 = st.columns(2)
     with c1:
         if st.button("Exportar referencia firmada"):

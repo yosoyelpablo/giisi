@@ -3,8 +3,8 @@
   python scripts/exportar_auditoria.py              emite la referencia y la guarda en exportaciones/
   python scripts/exportar_auditoria.py verificar F  compara la cadena actual con la referencia del archivo F
 
-En producción la referencia se emite en forma programada (por ejemplo, a diario y al cerrar cada
-incidente) y se sube a un bucket con bloqueo de objetos en modo de cumplimiento, que impide
+El sistema emite la referencia al cerrar cada incidente (backend: AUDIT_EXPORT_DIR). En producción, además,
+se emitiría a diario en forma programada y se subiría a un bucket con bloqueo de objetos en modo de cumplimiento, que impide
 modificarla o borrarla durante el período de retención, incluso con credenciales de administrador:
   aws s3api put-object --bucket <respaldos> --key auditoria/<archivo>.json --body <archivo>.json \\
       --object-lock-mode COMPLIANCE --object-lock-retain-until-date <fecha>
