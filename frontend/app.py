@@ -65,6 +65,13 @@ def pantalla_login():
 # ---------------------------------------------------------------- panel principal (HU-005, HU-010)
 def pantalla_panel():
     st.markdown("## Panel principal")
+    st.caption("Se actualiza automáticamente cada 4 segundos: las alertas nuevas aparecen sin recargar la página.")
+    panel_contenido()
+
+
+@st.fragment(run_every="4s")
+def panel_contenido():
+    """Indicadores y tablero. Fragmento con actualización periódica: refleja las alertas que llegan por el webhook."""
     m = api("GET", "/metricas").json()
     c1, c2, c3, c4 = st.columns(4)
     tc = m.get("tiempo_triaje_completo_promedio_seg")
@@ -91,7 +98,8 @@ def pantalla_panel():
                     st.markdown(f"**{i['titulo']}**")
                     st.caption(f"{i['categoria'] or '⚠️ a revisar'} · {i['activo'] or '—'}")
                     if st.button("Abrir", key=f"abrir{i['id_incidente']}"):
-                        st.session_state.incidente = st.session_state.sel_incidente = i["id_incidente"]; st.session_state.vista = "Detalle"; st.rerun()
+                        st.session_state.incidente = st.session_state.sel_incidente = i["id_incidente"]
+                        st.session_state.ir_a = "Detalle"; st.rerun()   # la navegación se aplica antes de crear el menú
 
 
 # ---------------------------------------------------------------- detalle (HU-006, HU-007, HU-011)
@@ -270,8 +278,13 @@ else:
         vistas = ["Panel", "Detalle", "Registrar incidente", "Playbooks"]
         if "*" in st.session_state.permisos:
             vistas.append("Integridad")
-        vista = st.radio("Sección", vistas, index=vistas.index(st.session_state.get("vista", "Panel")), label_visibility="collapsed")
-        st.session_state.vista = vista
+        # El menú usa una clave fija: si su valor por defecto cambiara en cada ejecución, Streamlit lo reiniciaría
+        # y la sección «rebotaría». Las navegaciones pedidas desde otra pantalla («Abrir») se aplican acá, antes de crearlo.
+        if "ir_a" in st.session_state:
+            st.session_state.vista = st.session_state.pop("ir_a")
+        if st.session_state.get("vista") not in vistas:
+            st.session_state.vista = "Panel"
+        vista = st.radio("Sección", vistas, key="vista", label_visibility="collapsed")
         if st.button("Cerrar sesión"):
             st.session_state.clear(); st.rerun()
     {"Panel": pantalla_panel, "Detalle": pantalla_detalle, "Registrar incidente": pantalla_alta,

@@ -4,7 +4,7 @@ Uso:  python scripts/simular_alerta.py [ransomware|acceso|filtracion|phishing]
 """
 import sys, json, uuid, datetime, requests, os
 
-API = os.getenv("API_URL", "http://localhost:8000")
+API = os.getenv("API_URL", "http://127.0.0.1:8000")   # 127.0.0.1 evita la demora de Windows con «localhost» (IPv6)
 KEY = os.getenv("WEBHOOK_API_KEY", "clave-webhook-desarrollo")
 
 ESCENARIOS = {
