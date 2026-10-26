@@ -1,0 +1,251 @@
+{
+  "1": [
+    {
+      "id_accion": 1,
+      "id_incidente": 1,
+      "actor": "sistema",
+      "descripcion": "Alerta recibida desde wazuh (regla 100210, nivel 12); incidente creado en estado «Nuevo»",
+      "timestamp": "2026-10-26T13:25:35.667460",
+      "hash_previo": "0000000000000000000000000000000000000000000000000000000000000000",
+      "hash_actual": "1c607d066cbe1aa42de49b204066edf74bdf47f2d26ca7ebc1a259bd419050ae"
+    },
+    {
+      "id_accion": 2,
+      "id_incidente": 1,
+      "actor": "motor de reglas",
+      "descripcion": "Clasificó como «Código malicioso» (confianza 1,00; reglas: ransomware, cifrado masivo, categoria_sugerida)",
+      "timestamp": "2026-10-26T13:25:35.682617",
+      "hash_previo": "1c607d066cbe1aa42de49b204066edf74bdf47f2d26ca7ebc1a259bd419050ae",
+      "hash_actual": "00c95bc88d982051fe38832f474e6854704cb273f6352f435d0cbb310867a6da"
+    },
+    {
+      "id_accion": 3,
+      "id_incidente": 1,
+      "actor": "motor de reglas",
+      "descripcion": "Calculó severidad Crítica (funcional 3 × información 3 × recuperabilidad 3 = 27)",
+      "timestamp": "2026-10-26T13:25:35.691617",
+      "hash_previo": "00c95bc88d982051fe38832f474e6854704cb273f6352f435d0cbb310867a6da",
+      "hash_actual": "acdb7a8db6b995b04976280f3f20477c68259ee0f9c1dfcbcc925cbe6caca6d6"
+    },
+    {
+      "id_accion": 4,
+      "id_incidente": 1,
+      "actor": "sistema",
+      "descripcion": "Notificó al coordinador de respuesta (severidad Crítica)",
+      "timestamp": "2026-10-26T13:25:35.700695",
+      "hash_previo": "acdb7a8db6b995b04976280f3f20477c68259ee0f9c1dfcbcc925cbe6caca6d6",
+      "hash_actual": "59d63c553403fe3d997c37b658056952c4e6af96c5b84d75185a60b917995934"
+    },
+    {
+      "id_accion": 5,
+      "id_incidente": 1,
+      "actor": "operador@giisi.local",
+      "descripcion": "Triaje confirmado por una persona: confirmó «Código malicioso» con severidad Crítica (triaje completo 82,9 s desde la recepción)",
+      "timestamp": "2026-10-26T13:26:58.540788",
+      "hash_previo": "59d63c553403fe3d997c37b658056952c4e6af96c5b84d75185a60b917995934",
+      "hash_actual": "56f0e52e25c5a21839bfba3ed7717e623f1fc48c38ed9716f4c8f7be1bf3fe94"
+    },
+    {
+      "id_accion": 6,
+      "id_incidente": 1,
+      "actor": "operador@giisi.local",
+      "descripcion": "Cambió el estado de «Nuevo» a «En análisis»",
+      "timestamp": "2026-10-26T13:27:03.921917",
+      "hash_previo": "56f0e52e25c5a21839bfba3ed7717e623f1fc48c38ed9716f4c8f7be1bf3fe94",
+      "hash_actual": "c3b0926b625320379be9f26f27a2ddc1d901059b86ecf17f101fd70386212a03"
+    },
+    {
+      "id_accion": 7,
+      "id_incidente": 1,
+      "actor": "operador@giisi.local",
+      "descripcion": "Inició el playbook «Respuesta ante ransomware»",
+      "timestamp": "2026-10-26T13:27:03.929662",
+      "hash_previo": "c3b0926b625320379be9f26f27a2ddc1d901059b86ecf17f101fd70386212a03",
+      "hash_actual": "de6e10bd4773a0cab942539214ad492ace4b6ef6a0f8ddd5140c8ca49559a69f"
+    },
+    {
+      "id_accion": 8,
+      "id_incidente": 1,
+      "actor": "operador@giisi.local",
+      "descripcion": "Completó el paso 1 «Aislar el activo afectado de la red» [Responder] — notas: aislar red",
+      "timestamp": "2026-10-26T13:27:36.198287",
+      "hash_previo": "de6e10bd4773a0cab942539214ad492ace4b6ef6a0f8ddd5140c8ca49559a69f",
+      "hash_actual": "6577bac36065596698991815f58b5a91ddb5fe725e0d22404fd448ef87c200fe"
+    },
+    {
+      "id_accion": 9,
+      "id_incidente": 1,
+      "actor": "operador@giisi.local",
+      "descripcion": "Cambió el estado de «En análisis» a «Contenido»",
+      "timestamp": "2026-10-26T13:27:36.211265",
+      "hash_previo": "6577bac36065596698991815f58b5a91ddb5fe725e0d22404fd448ef87c200fe",
+      "hash_actual": "bef9833f20337c1e7214c488c95d2c02dbe323fe9319c6daf7505a9dd0979cef"
+    }
+  ],
+  "2": [
+    {
+      "id_accion": 10,
+      "id_incidente": 2,
+      "actor": "sistema",
+      "descripcion": "Alerta recibida desde wazuh (regla 87105, nivel 11); incidente creado en estado «Nuevo»",
+      "timestamp": "2026-10-26T13:27:47.855999",
+      "hash_previo": "bef9833f20337c1e7214c488c95d2c02dbe323fe9319c6daf7505a9dd0979cef",
+      "hash_actual": "d7aa425301c7d7b4340677e0fa6a0cc5d71148bf06a54b150a01bedea8139bf5"
+    },
+    {
+      "id_accion": 11,
+      "id_incidente": 2,
+      "actor": "motor de reglas",
+      "descripcion": "Clasificó como «Filtración de datos» (confianza 1,00; reglas: exfiltracion, filtracion, transferencia inusual, datos de clientes, categoria_sugerida)",
+      "timestamp": "2026-10-26T13:27:47.865001",
+      "hash_previo": "d7aa425301c7d7b4340677e0fa6a0cc5d71148bf06a54b150a01bedea8139bf5",
+      "hash_actual": "ede0dd41dad0ffed9847ec0ad29d4d740a20bb5375245aab6521775cf96cfa08"
+    },
+    {
+      "id_accion": 12,
+      "id_incidente": 2,
+      "actor": "motor de reglas",
+      "descripcion": "Calculó severidad Alta (funcional 2 × información 3 × recuperabilidad 2 = 12)",
+      "timestamp": "2026-10-26T13:27:47.874139",
+      "hash_previo": "ede0dd41dad0ffed9847ec0ad29d4d740a20bb5375245aab6521775cf96cfa08",
+      "hash_actual": "e69998a2ecb0148e51da52a3b48accbc60b6d904fa18f40f167a7a5ca9f0a255"
+    },
+    {
+      "id_accion": 13,
+      "id_incidente": 2,
+      "actor": "sistema",
+      "descripcion": "Notificó al coordinador de respuesta (severidad Alta)",
+      "timestamp": "2026-10-26T13:27:47.882472",
+      "hash_previo": "e69998a2ecb0148e51da52a3b48accbc60b6d904fa18f40f167a7a5ca9f0a255",
+      "hash_actual": "28e04dcb0df90d950f9a94a7485237453bc558e23dc7c4eb8805f81ad3481ec5"
+    },
+    {
+      "id_accion": 14,
+      "id_incidente": 2,
+      "actor": "operador@giisi.local",
+      "descripcion": "Triaje confirmado por una persona: confirmó «Filtración de datos» con severidad Alta (triaje completo 12,3 s desde la recepción)",
+      "timestamp": "2026-10-26T13:28:00.192497",
+      "hash_previo": "28e04dcb0df90d950f9a94a7485237453bc558e23dc7c4eb8805f81ad3481ec5",
+      "hash_actual": "bbef19714a304eeae7c711262eab57d51bc2990ccc4e14cfeac5fe1ccddf2666"
+    },
+    {
+      "id_accion": 15,
+      "id_incidente": 2,
+      "actor": "operador@giisi.local",
+      "descripcion": "Cambió el estado de «Nuevo» a «En análisis»",
+      "timestamp": "2026-10-26T13:28:03.030215",
+      "hash_previo": "bbef19714a304eeae7c711262eab57d51bc2990ccc4e14cfeac5fe1ccddf2666",
+      "hash_actual": "687b2fa254175c7c3758652a7558e2dfd441604a1f43dc2ab37eaff8f8785889"
+    },
+    {
+      "id_accion": 16,
+      "id_incidente": 2,
+      "actor": "operador@giisi.local",
+      "descripcion": "Inició el playbook «Respuesta ante filtración de datos»",
+      "timestamp": "2026-10-26T13:28:03.039228",
+      "hash_previo": "687b2fa254175c7c3758652a7558e2dfd441604a1f43dc2ab37eaff8f8785889",
+      "hash_actual": "bc02be229c4c6c72e4002daf5159c6f241ea8e45d1bfa21ec3bf0f657202b2fa"
+    },
+    {
+      "id_accion": 17,
+      "id_incidente": 2,
+      "actor": "operador@giisi.local",
+      "descripcion": "Completó el paso 1 «Bloquear el canal de exfiltración identificado» [Responder] — notas: aislar red",
+      "timestamp": "2026-10-26T13:28:09.212575",
+      "hash_previo": "bc02be229c4c6c72e4002daf5159c6f241ea8e45d1bfa21ec3bf0f657202b2fa",
+      "hash_actual": "38c4621022c340a66c7f3baadcd85df9842d1c52a269f6e7bff8b242144e1c39"
+    },
+    {
+      "id_accion": 18,
+      "id_incidente": 2,
+      "actor": "operador@giisi.local",
+      "descripcion": "Cambió el estado de «En análisis» a «Contenido»",
+      "timestamp": "2026-10-26T13:28:09.227574",
+      "hash_previo": "38c4621022c340a66c7f3baadcd85df9842d1c52a269f6e7bff8b242144e1c39",
+      "hash_actual": "1a6f6e3cf4f1dbfc3b2bf4c94324575d49ed77252c755297d8cc3052bc8335fc"
+    }
+  ],
+  "3": [
+    {
+      "id_accion": 19,
+      "id_incidente": 3,
+      "actor": "sistema",
+      "descripcion": "Alerta recibida desde wazuh (regla 5710, nivel 10); incidente creado en estado «Nuevo»",
+      "timestamp": "2026-10-26T13:28:09.857591",
+      "hash_previo": "1a6f6e3cf4f1dbfc3b2bf4c94324575d49ed77252c755297d8cc3052bc8335fc",
+      "hash_actual": "29680e99e0d1685a174eaa12b9b1061ad85c7db5246c132cd1d331ccc932290b"
+    },
+    {
+      "id_accion": 20,
+      "id_incidente": 3,
+      "actor": "motor de reglas",
+      "descripcion": "Clasificó como «Acceso no autorizado» (confianza 1,00; reglas: login exitoso inusual, escalada de privilegios, cuenta comprometida, sudo, categoria_sugerida)",
+      "timestamp": "2026-10-26T13:28:09.865731",
+      "hash_previo": "29680e99e0d1685a174eaa12b9b1061ad85c7db5246c132cd1d331ccc932290b",
+      "hash_actual": "b88178e5634dded73c3ad0d069b88a829332bec491649ca3e2a296bee50a1455"
+    },
+    {
+      "id_accion": 21,
+      "id_incidente": 3,
+      "actor": "motor de reglas",
+      "descripcion": "Calculó severidad Crítica (funcional 2 × información 3 × recuperabilidad 3 = 18)",
+      "timestamp": "2026-10-26T13:28:09.873878",
+      "hash_previo": "b88178e5634dded73c3ad0d069b88a829332bec491649ca3e2a296bee50a1455",
+      "hash_actual": "e51b8f2e3a640bead04cbd0c903c592dc2a54d629b1bbad91fdbc9a49e5b7442"
+    },
+    {
+      "id_accion": 22,
+      "id_incidente": 3,
+      "actor": "sistema",
+      "descripcion": "Notificó al coordinador de respuesta (severidad Crítica)",
+      "timestamp": "2026-10-26T13:28:09.880878",
+      "hash_previo": "e51b8f2e3a640bead04cbd0c903c592dc2a54d629b1bbad91fdbc9a49e5b7442",
+      "hash_actual": "25d47c47d30ca855bbb04ceb2908148be3cc9ee018ab6a20d89c69b5a3d5c4e5"
+    },
+    {
+      "id_accion": 23,
+      "id_incidente": 3,
+      "actor": "operador@giisi.local",
+      "descripcion": "Triaje confirmado por una persona: confirmó «Acceso no autorizado» con severidad Crítica (triaje completo 18,6 s desde la recepción)",
+      "timestamp": "2026-10-26T13:28:28.434224",
+      "hash_previo": "25d47c47d30ca855bbb04ceb2908148be3cc9ee018ab6a20d89c69b5a3d5c4e5",
+      "hash_actual": "cddeb88e0610679874109dbe1b64a8edd3ae53ede394962938b4505946f59487"
+    },
+    {
+      "id_accion": 24,
+      "id_incidente": 3,
+      "actor": "operador@giisi.local",
+      "descripcion": "Cambió el estado de «Nuevo» a «En análisis»",
+      "timestamp": "2026-10-26T13:28:30.711641",
+      "hash_previo": "cddeb88e0610679874109dbe1b64a8edd3ae53ede394962938b4505946f59487",
+      "hash_actual": "8156e97ce439dbdda077f039ca984b20a77120e5ba517d3339f74bf81e0d0377"
+    },
+    {
+      "id_accion": 25,
+      "id_incidente": 3,
+      "actor": "operador@giisi.local",
+      "descripcion": "Inició el playbook «Respuesta ante acceso no autorizado»",
+      "timestamp": "2026-10-26T13:28:30.719642",
+      "hash_previo": "8156e97ce439dbdda077f039ca984b20a77120e5ba517d3339f74bf81e0d0377",
+      "hash_actual": "d6e3fddd4107bf3438ebcca6c4a4208bb7b6f04733ec8a5529927acc2ad98c8f"
+    },
+    {
+      "id_accion": 26,
+      "id_incidente": 3,
+      "actor": "operador@giisi.local",
+      "descripcion": "Completó el paso 1 «Deshabilitar la cuenta comprometida y revocar sus sesiones» [Responder] — notas: contener",
+      "timestamp": "2026-10-26T13:28:37.165625",
+      "hash_previo": "d6e3fddd4107bf3438ebcca6c4a4208bb7b6f04733ec8a5529927acc2ad98c8f",
+      "hash_actual": "212ed382adbe271ec47f3d20e92ea5e1dc16e766d60c52daf682a2b8beade0cb"
+    },
+    {
+      "id_accion": 27,
+      "id_incidente": 3,
+      "actor": "operador@giisi.local",
+      "descripcion": "Cambió el estado de «En análisis» a «Contenido»",
+      "timestamp": "2026-10-26T13:28:37.179218",
+      "hash_previo": "212ed382adbe271ec47f3d20e92ea5e1dc16e766d60c52daf682a2b8beade0cb",
+      "hash_actual": "ba59495e911a4c8b0da611d31f4991a0bc9b421016fb404d9478f9ac6217b973"
+    }
+  ]
+}

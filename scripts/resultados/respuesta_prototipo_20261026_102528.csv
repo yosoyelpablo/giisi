@@ -1,0 +1,4 @@
+﻿modo,escenario,categoria,categoria_correcta,severidad,severidad_correcta,seg_triaje,playbook,primer_paso,contencion_correcta,segundos,incidente,notas
+prototipo,E1,codigo_malicioso,True,Crítica,True,82.884,Respuesta ante ransomware,1,True,120.6,1,aislar red
+prototipo,E3,filtracion_datos,True,Alta,True,12.342,Respuesta ante filtración de datos,1,True,21.4,2,aislar red
+prototipo,E2,acceso_no_autorizado,True,Crítica,True,18.582,Respuesta ante acceso no autorizado,1,True,27.3,3,contener
