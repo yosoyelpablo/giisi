@@ -37,7 +37,8 @@ def a_out(session: Session, inc: Incidente) -> IncidenteOut:
         activo=act.nombre if act else None, asignado=usr.nombre if usr else None,
         fecha_ocurrencia=inc.fecha_ocurrencia, fecha_recepcion=inc.fecha_recepcion,
         fecha_contencion=inc.fecha_contencion, fecha_cierre=inc.fecha_cierre,
-        latencia_alerta_min=inc.latencia_alerta_min, tiempo_triaje_seg=inc.tiempo_triaje_seg, mttr_min=inc.mttr_min, confianza_clasificacion=inc.confianza_clasificacion,
+        latencia_alerta_min=inc.latencia_alerta_min, tiempo_triaje_seg=inc.tiempo_triaje_seg,
+        fecha_confirmacion=inc.fecha_confirmacion, tiempo_triaje_completo_seg=inc.tiempo_triaje_completo_seg, mttr_min=inc.mttr_min, confianza_clasificacion=inc.confianza_clasificacion,
         a_revisar=inc.a_revisar, origen=inc.origen)
 
 
@@ -47,12 +48,13 @@ def clasificar_y_priorizar(session: Session, inc: Incidente, texto: str, nivel: 
     res = rules.clasificar(texto, categoria_sugerida)
     inc.confianza_clasificacion = res["confianza"]; inc.a_revisar = res["a_revisar"]
     cat = session.exec(select(CategoriaNist).where(CategoriaNist.clave == res["clave"])).first() if res["clave"] else None
+    conf = f"{res['confianza']:.2f}".replace(".", ",")      # coma decimal, como en el documento
     if cat and not res["a_revisar"]:
         inc.id_categoria = cat.id_categoria
-        registrar(session, f"Clasificó como «{cat.nombre}» (confianza {res['confianza']:.2f}; reglas: "
+        registrar(session, f"Clasificó como «{cat.nombre}» (confianza {conf}; reglas: "
                   f"{', '.join(res['reglas_aplicadas'])})", actor=actor, id_incidente=inc.id_incidente)
     else:
-        registrar(session, f"Clasificación por debajo del umbral (confianza {res['confianza']:.2f}); "
+        registrar(session, f"Clasificación por debajo del umbral (confianza {conf}); "
                   f"marcado «a revisar» para clasificación manual", actor=actor, id_incidente=inc.id_incidente)
     activo = session.get(Activo, inc.id_activo) if inc.id_activo else None
     sev = rules.severidad(nivel, cat.impacto_informacion if cat else 2, activo.criticidad if activo else 3)
@@ -65,6 +67,44 @@ def clasificar_y_priorizar(session: Session, inc: Incidente, texto: str, nivel: 
                   actor="sistema", id_incidente=inc.id_incidente)
     inc.tiempo_triaje_seg = round((utcnow() - inc.fecha_recepcion).total_seconds(), 3)   # T0 = recepción
     session.add(inc); session.commit(); session.refresh(inc)
+
+
+# ---------------------------------------------------------------- confirmación humana del triaje (HU-003, devolución E3)
+def confirmar_clasificacion(session: Session, inc: Incidente, categoria_clave: Optional[str],
+                            severidad: Optional[str], usuario) -> Incidente:
+    """El operador revisa la propuesta del motor de reglas y la confirma o la corrige.
+
+    El triaje completo termina acá: tiempo_triaje_completo_seg = confirmación − recepción (T0).
+    """
+    if inc.fecha_confirmacion is not None:
+        raise HTTPException(400, "La clasificación de este incidente ya fue confirmada")
+    anterior_cat = session.get(CategoriaNist, inc.id_categoria) if inc.id_categoria else None
+    if categoria_clave:
+        cat = session.exec(select(CategoriaNist).where(CategoriaNist.clave == categoria_clave)).first()
+        if not cat:
+            raise HTTPException(400, f"Categoría inexistente: {categoria_clave}")
+    else:
+        cat = anterior_cat
+        if cat is None:
+            raise HTTPException(400, "El incidente quedó «a revisar»: indique la categoría al confirmar")
+    if severidad and severidad not in SEVERIDADES:
+        raise HTTPException(400, f"Severidad inválida; valores: {SEVERIDADES}")
+    sev_anterior = inc.severidad
+    inc.id_categoria, inc.a_revisar = cat.id_categoria, False
+    if severidad: inc.severidad = severidad
+    inc.fecha_confirmacion = utcnow()
+    inc.tiempo_triaje_completo_seg = round((inc.fecha_confirmacion - inc.fecha_recepcion).total_seconds(), 3)
+    session.add(inc); session.commit(); session.refresh(inc)
+    cambios = []
+    if anterior_cat is None or anterior_cat.id_categoria != cat.id_categoria:
+        cambios.append(f"categoría «{anterior_cat.nombre if anterior_cat else 'sin clasificar'}» → «{cat.nombre}»")
+    if severidad and severidad != sev_anterior:
+        cambios.append(f"severidad {sev_anterior} → {severidad}")
+    detalle = ("corrigió " + " y ".join(cambios)) if cambios else f"confirmó «{cat.nombre}» con severidad {inc.severidad}"
+    registrar(session, f"Triaje confirmado por una persona: {detalle} "
+              f"(triaje completo {f'{inc.tiempo_triaje_completo_seg:.1f}'.replace('.', ',')} s desde la recepción)",
+              actor=usuario.email, id_incidente=inc.id_incidente, id_usuario=usuario.id_usuario)
+    return inc
 
 
 # ---------------------------------------------------------------- ingesta (HU-001)
@@ -238,6 +278,7 @@ def metricas(session: Session) -> MetricasOut:
         if i.severidad: por_sev[i.severidad] = por_sev.get(i.severidad, 0) + 1
     lat = [i.latencia_alerta_min for i in incs if i.latencia_alerta_min is not None]
     tri = [i.tiempo_triaje_seg for i in incs if i.tiempo_triaje_seg is not None]
+    tri_c = [i.tiempo_triaje_completo_seg for i in incs if i.tiempo_triaje_completo_seg is not None]
     mttr = [i.mttr_min for i in incs if i.mttr_min is not None]
     clasif = [i for i in incs if i.confianza_clasificacion is not None]
     tasa = round(100.0 * sum(1 for i in clasif if not i.a_revisar) / len(clasif), 1) if clasif else None
@@ -246,5 +287,6 @@ def metricas(session: Session) -> MetricasOut:
         por_estado=por_estado, por_severidad=por_sev,
         latencia_alerta_promedio_min=round(sum(lat) / len(lat), 1) if lat else None,
         tiempo_triaje_promedio_seg=round(sum(tri) / len(tri), 2) if tri else None,
+        tiempo_triaje_completo_promedio_seg=round(sum(tri_c) / len(tri_c), 1) if tri_c else None,
         mttr_promedio_min=round(sum(mttr) / len(mttr), 1) if mttr else None,
         tasa_clasificacion_automatica=tasa, integridad_audit_log=verificar(session)["integra"])

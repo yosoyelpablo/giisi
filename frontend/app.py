@@ -4,11 +4,12 @@ Implementa las pantallas diseñadas en la Entrega 2: panel principal (KPI + kanb
 detalle de incidente (información, línea de tiempo, playbook y audit log) y ejecución
 de playbook. Se comunica con la API mediante HTTP con el token JWT del usuario.
 """
+import json
 import os
 import requests
 import streamlit as st
 
-API = os.getenv("API_URL", "http://localhost:8000")
+API = os.getenv("API_URL", "http://127.0.0.1:8000")   # 127.0.0.1: evita la demora de Windows con «localhost» (IPv6)
 SEV_COLOR = {"Crítica": "#c0392b", "Alta": "#e07b28", "Media": "#e6b800", "Baja": "#3f8f4f", None: "#7b8494"}
 ESTADOS = ["Nuevo", "En análisis", "Contenido", "Resuelto", "Cerrado"]
 CSF_COLOR = {"Responder": "#c0522a", "Detectar": "#2f4a86", "Recuperar": "#7a4fa0"}
@@ -32,6 +33,11 @@ def error(r):
         st.error(r.json().get("detail", r.text))
     except Exception:
         st.error(r.text)
+
+
+def num(x, d=0):
+    """Número con coma decimal (convención del documento)."""
+    return f"{x:.{d}f}".replace(".", ",")
 
 
 def badge(texto, color):
@@ -61,15 +67,17 @@ def pantalla_panel():
     st.markdown("## Panel principal")
     m = api("GET", "/metricas").json()
     c1, c2, c3, c4 = st.columns(4)
-    c1.metric("Tiempo de triaje", f"{m['tiempo_triaje_promedio_seg']:.2f} s" if m["tiempo_triaje_promedio_seg"] is not None else "—",
-              help="Desde la recepción de la alerta hasta la clasificación y la severidad (lo mejora el prototipo)")
-    c2.metric("Tiempo de respuesta (MTTR)", f"{m['mttr_promedio_min']:.0f} min" if m["mttr_promedio_min"] is not None else "—",
+    tc = m.get("tiempo_triaje_completo_promedio_seg")
+    c1.metric("Triaje completo", f"{num(tc, 0)} s" if tc is not None else "—",
+              help="Desde la recepción de la alerta hasta que una persona confirma la clasificación y la severidad")
+    c2.metric("Tiempo de respuesta", f"{num(m['mttr_promedio_min'], 0)} min" if m["mttr_promedio_min"] is not None else "—",
               help="Desde la recepción de la alerta hasta la contención (lo mejora el prototipo)")
     c3.metric("Incidentes abiertos", m["incidentes_abiertos"])
-    c4.metric("Clasificación automática", f"{m['tasa_clasificacion_automatica']:.0f} %" if m["tasa_clasificacion_automatica"] is not None else "—")
+    c4.metric("Clasificación automática", f"{num(m['tasa_clasificacion_automatica'], 0)} %" if m["tasa_clasificacion_automatica"] is not None else "—")
     st.caption(("✅ Audit log íntegro" if m["integridad_audit_log"] else "⚠️ Audit log con inconsistencias")
+               + (f" · propuesta automática del motor de reglas: {num(m['tiempo_triaje_promedio_seg'], 2)} s" if m["tiempo_triaje_promedio_seg"] is not None else "")
                + f" · {m['incidentes_totales']} incidentes en total"
-               + (f" · latencia de la fuente externa (evento → alerta): {m['latencia_alerta_promedio_min']:.0f} min, fuera del alcance del prototipo" if m["latencia_alerta_promedio_min"] is not None else ""))
+               + (f" · latencia de la fuente externa (evento → alerta): {num(m['latencia_alerta_promedio_min'], 0)} min, fuera del alcance del prototipo" if m["latencia_alerta_promedio_min"] is not None else ""))
     st.markdown("### Tablero de incidentes (kanban)")
     incs = api("GET", "/incidentes").json()
     cols = st.columns(len(ESTADOS))
@@ -109,11 +117,12 @@ def pantalla_detalle():
         st.markdown("#### Información")
         st.write(inc["descripcion"] or "—")
         st.write(f"**Recepción de la alerta (T0):** {inc['fecha_recepcion'][:16].replace('T', ' ')} UTC")
-        st.write(f"**Latencia de la fuente externa (evento → alerta):** {inc['latencia_alerta_min']:.0f} min — contexto, fuera del prototipo" if inc["latencia_alerta_min"] is not None else "**Latencia de la fuente externa:** —")
-        st.write(f"**Tiempo de triaje:** {inc['tiempo_triaje_seg']:.2f} s" if inc["tiempo_triaje_seg"] is not None else "**Tiempo de triaje:** —")
-        st.write(f"**Tiempo de respuesta (MTTR):** {inc['mttr_min']:.0f} min" if inc["mttr_min"] is not None else "**Tiempo de respuesta (MTTR):** — (sin contención aún)")
+        st.write(f"**Latencia de la fuente externa (evento → alerta):** {num(inc['latencia_alerta_min'], 0)} min — contexto, fuera del prototipo" if inc["latencia_alerta_min"] is not None else "**Latencia de la fuente externa:** —")
+        st.write(f"**Propuesta automática (clasificación y severidad):** {num(inc['tiempo_triaje_seg'], 2)} s desde T0" if inc["tiempo_triaje_seg"] is not None else "**Propuesta automática:** —")
+        st.write(f"**Triaje completo (hasta la confirmación humana):** {num(inc['tiempo_triaje_completo_seg'], 0)} s" if inc.get("tiempo_triaje_completo_seg") is not None else "**Triaje completo:** — (clasificación sin confirmar)")
+        st.write(f"**Tiempo de respuesta:** {num(inc['mttr_min'], 0)} min" if inc["mttr_min"] is not None else "**Tiempo de respuesta:** — (sin contención aún)")
         if inc["confianza_clasificacion"] is not None:
-            st.write(f"**Confianza de clasificación:** {inc['confianza_clasificacion']:.2f}")
+            st.write(f"**Confianza de clasificación:** {num(inc['confianza_clasificacion'], 2)}")
 
         st.markdown("#### Registro de acciones (audit log · integridad verificable)")
         log = api("GET", f"/incidentes/{sel}/auditoria").json()
@@ -123,6 +132,24 @@ def pantalla_detalle():
                         unsafe_allow_html=True)
 
     with der:
+        st.markdown("#### Triaje")
+        puede_clasificar = "incidentes:clasificar" in st.session_state.permisos or "*" in st.session_state.permisos
+        if inc.get("fecha_confirmacion"):
+            st.success(f"Clasificación confirmada: {inc['categoria']} · severidad {inc['severidad']} "
+                       f"({num(inc['tiempo_triaje_completo_seg'], 0)} s desde la recepción)")
+        elif puede_clasificar and inc["estado"] != "Cerrado":
+            st.caption("Revise la propuesta del motor de reglas y confírmela o corríjala.")
+            cats = api("GET", "/categorias").json()
+            claves = [c["clave"] for c in cats]
+            c_sel = st.selectbox("Categoría NIST", claves, format_func=lambda k: next(c["nombre"] for c in cats if c["clave"] == k),
+                                 index=claves.index(inc["categoria_clave"]) if inc["categoria_clave"] in claves else 0, key=f"cat{sel}")
+            s_sel = st.selectbox("Severidad", ["Baja", "Media", "Alta", "Crítica"],
+                                 index=["Baja", "Media", "Alta", "Crítica"].index(inc["severidad"]) if inc["severidad"] else 1, key=f"sev{sel}")
+            if st.button("✔ Confirmar clasificación", type="primary"):
+                r = api("POST", f"/incidentes/{sel}/clasificacion/confirmar", json={"categoria_clave": c_sel, "severidad": s_sel})
+                st.rerun() if r.status_code == 200 else error(r)
+        else:
+            st.info("Clasificación pendiente de confirmación por el operador.")
         st.markdown("#### Playbook")
         ej = api("GET", f"/incidentes/{sel}/playbook").json()
         puede_ejecutar = "playbook:ejecutar" in st.session_state.permisos or "*" in st.session_state.permisos
@@ -201,6 +228,33 @@ def pantalla_integridad():
                                                         f"{d['registros']} registros" + (f" · último hash {d['ultimo_hash'][:16]}…" if d["integra"] else f" · primer fallo en el registro {d['primer_fallo']}: {d['motivo']}"))
         else:
             error(r)
+
+    st.markdown("### Referencia externa firmada")
+    st.write("La cadena de hashes detecta alteraciones, pero quien tenga acceso de escritura a la base podría recalcularla "
+             "entera. Por eso se exporta periódicamente el estado de la cadena firmado (HMAC-SHA256, con una clave que no está "
+             "en la base) y se guarda en un almacenamiento inmutable. Comparar la cadena actual con una exportación anterior "
+             "detecta una reconstrucción.")
+    c1, c2 = st.columns(2)
+    with c1:
+        if st.button("Exportar referencia firmada"):
+            r = api("GET", "/auditoria/exportar")
+            if r.status_code == 200:
+                st.session_state.exportacion = r.json()
+            else:
+                error(r)
+        if st.session_state.get("exportacion"):
+            exp = st.session_state.exportacion
+            st.json(exp)
+            st.download_button("Descargar exportación (JSON)", json.dumps(exp, ensure_ascii=False, indent=2),
+                               file_name=f"giisi_referencia_{exp['referencia']['ultimo_id']}.json", mime="application/json")
+    with c2:
+        archivo = st.file_uploader("Verificar contra una exportación anterior", type="json")
+        if archivo is not None and st.button("Verificar contra la exportación", type="primary"):
+            r = api("POST", "/auditoria/verificar-exportacion", json=json.loads(archivo.getvalue()))
+            if r.status_code == 200:
+                d = r.json(); (st.success if d["coincide"] else st.error)(d["motivo"])
+            else:
+                error(r)
 
 
 # ---------------------------------------------------------------- navegación

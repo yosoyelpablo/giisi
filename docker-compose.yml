@@ -21,6 +21,7 @@ services:
       DATABASE_URL: postgresql+psycopg2://giisi:${POSTGRES_PASSWORD:-giisi_dev}@db:5432/giisi
       JWT_SECRET: ${JWT_SECRET:-cambiar-en-produccion}
       WEBHOOK_API_KEY: ${WEBHOOK_API_KEY:-clave-webhook-desarrollo}
+      AUDIT_EXPORT_KEY: ${AUDIT_EXPORT_KEY:-cambiar-en-produccion-clave-de-exportacion}
       SEED_PASSWORD: ${SEED_PASSWORD:-Giisi!2026demo}
     ports: ["8000:8000"]
     depends_on:

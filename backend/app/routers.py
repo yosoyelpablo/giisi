@@ -2,12 +2,13 @@
 from fastapi import APIRouter, Depends, Header, HTTPException, status
 from sqlmodel import Session, select
 from . import config, services
-from .audit import verificar
+from .audit import verificar, exportar_firmado, verificar_contra_exportacion
 from .auth import authenticate, create_token, require, get_current_user, CurrentUser
 from .database import get_session
 from .models import Rol, Usuario, Incidente, Playbook, PasoPlaybook, CategoriaNist, AccionRespuesta, EjecucionPlaybook, LeccionAprendida
 from .schemas import (LoginIn, TokenOut, AlertaIn, IncidenteManualIn, IncidenteOut, CambioEstadoIn, AsignarIn,
-                      SeveridadIn, CompletarPasoIn, CerrarIn, EjecucionOut, AccionOut, MetricasOut)
+                      SeveridadIn, CompletarPasoIn, CerrarIn, EjecucionOut, AccionOut, MetricasOut,
+                      ConfirmarClasificacionIn, ExportacionIn)
 
 router = APIRouter()
 
@@ -77,6 +78,13 @@ def severidad(id_incidente: int, datos: SeveridadIn, session: Session = Depends(
     return services.a_out(session, services.cambiar_severidad(session, _inc(session, id_incidente), datos.severidad, user))
 
 
+@router.post("/incidentes/{id_incidente}/clasificacion/confirmar", response_model=IncidenteOut, tags=["incidentes"])
+def confirmar_clasificacion(id_incidente: int, datos: ConfirmarClasificacionIn, session: Session = Depends(get_session),
+                            user=Depends(require("incidentes:clasificar"))):
+    inc = services.confirmar_clasificacion(session, _inc(session, id_incidente), datos.categoria_clave, datos.severidad, user)
+    return services.a_out(session, inc)
+
+
 @router.post("/incidentes/{id_incidente}/cerrar", response_model=IncidenteOut, tags=["incidentes"])
 def cerrar(id_incidente: int, datos: CerrarIn, session: Session = Depends(get_session),
            user=Depends(require("incidentes:cerrar"))):
@@ -89,6 +97,11 @@ def lecciones(id_incidente: int, session: Session = Depends(get_session), user=D
 
 
 # ---------------------------------------------------------------- playbooks (HU-006)
+@router.get("/categorias", tags=["incidentes"])
+def categorias(session: Session = Depends(get_session), user=Depends(require("incidentes:leer"))):
+    return [{"clave": c.clave, "nombre": c.nombre} for c in session.exec(select(CategoriaNist))]
+
+
 @router.get("/playbooks", tags=["playbooks"])
 def playbooks(session: Session = Depends(get_session), user=Depends(require("incidentes:leer"))):
     out = []
@@ -130,6 +143,21 @@ def auditoria(id_incidente: int, session: Session = Depends(get_session), user=D
 @router.get("/auditoria/verificar", tags=["auditoria"])
 def verificar_cadena(session: Session = Depends(get_session), user=Depends(require("auditoria:verificar"))):
     return verificar(session)
+
+
+@router.get("/auditoria/exportar", tags=["auditoria"])
+def exportar_auditoria(session: Session = Depends(get_session), user=Depends(require("auditoria:verificar"))):
+    """Referencia externa firmada del estado de la cadena; se guarda en almacenamiento inmutable."""
+    try:
+        return exportar_firmado(session)
+    except ValueError as e:
+        raise HTTPException(409, str(e))
+
+
+@router.post("/auditoria/verificar-exportacion", tags=["auditoria"])
+def verificar_exportacion(datos: ExportacionIn, session: Session = Depends(get_session),
+                          user=Depends(require("auditoria:verificar"))):
+    return verificar_contra_exportacion(session, datos.model_dump())
 
 
 # ---------------------------------------------------------------- métricas (HU-010)

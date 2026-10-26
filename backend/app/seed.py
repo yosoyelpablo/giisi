@@ -6,8 +6,8 @@ from .models import Rol, Usuario, CategoriaNist, Activo, Playbook, PasoPlaybook
 
 # Permisos por rol — Tabla 8 (E3). El administrador tiene comodín "*".
 ROLES = {
-    "operador": "incidentes:leer,incidentes:crear,playbook:ejecutar,lecciones:crear,metricas:leer",
-    "coordinador": "incidentes:leer,incidentes:crear,incidentes:asignar,incidentes:severidad,incidentes:cerrar,"
+    "operador": "incidentes:leer,incidentes:crear,incidentes:clasificar,playbook:ejecutar,lecciones:crear,metricas:leer",
+    "coordinador": "incidentes:leer,incidentes:crear,incidentes:clasificar,incidentes:asignar,incidentes:severidad,incidentes:cerrar,"
                    "playbook:ejecutar,playbook:editar,lecciones:crear,metricas:leer",
     "gerente": "incidentes:leer,metricas:leer",
     "administrador": "*",

@@ -58,6 +58,17 @@ class SeveridadIn(BaseModel):
     severidad: str
 
 
+class ConfirmarClasificacionIn(BaseModel):
+    categoria_clave: Optional[str] = None   # si se omite, se confirma la categoría propuesta por el motor de reglas
+    severidad: Optional[str] = None         # si se omite, se confirma la severidad calculada
+
+
+class ExportacionIn(BaseModel):
+    referencia: dict[str, Any]
+    firma: str
+    algoritmo: str = "HMAC-SHA256"
+
+
 class CompletarPasoIn(BaseModel):
     notas: str = ""
 
@@ -83,6 +94,8 @@ class IncidenteOut(BaseModel):
     fecha_cierre: Optional[datetime]
     latencia_alerta_min: Optional[float]
     tiempo_triaje_seg: Optional[float]
+    fecha_confirmacion: Optional[datetime] = None
+    tiempo_triaje_completo_seg: Optional[float] = None
     mttr_min: Optional[float]
     confianza_clasificacion: Optional[float]
     a_revisar: bool
@@ -127,6 +140,7 @@ class MetricasOut(BaseModel):
     por_severidad: dict[str, int]
     latencia_alerta_promedio_min: Optional[float]
     tiempo_triaje_promedio_seg: Optional[float]
+    tiempo_triaje_completo_promedio_seg: Optional[float] = None
     mttr_promedio_min: Optional[float]
     tasa_clasificacion_automatica: Optional[float]
     integridad_audit_log: bool

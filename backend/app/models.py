@@ -74,7 +74,9 @@ class Incidente(SQLModel, table=True):
     fecha_contencion: Optional[datetime] = None
     fecha_cierre: Optional[datetime] = None
     latencia_alerta_min: Optional[float] = None    # evento -> recepción: latencia de la fuente externa (contexto, no es meta)
-    tiempo_triaje_seg: Optional[float] = None      # recepción -> clasificación + severidad (lo mejora el prototipo)
+    tiempo_triaje_seg: Optional[float] = None      # recepción -> clasificación + severidad AUTOMÁTICAS (sin revisión humana)
+    fecha_confirmacion: Optional[datetime] = None  # instante en que una persona confirma (o corrige) la clasificación
+    tiempo_triaje_completo_seg: Optional[float] = None  # recepción -> confirmación humana: triaje completo (devolución E3)
     mttr_min: Optional[float] = None               # recepción -> contención (lo mejora el prototipo)
     confianza_clasificacion: Optional[float] = None
     a_revisar: bool = False                         # clasificación por debajo del umbral (HU-003)
@@ -105,7 +107,7 @@ class PasoPlaybook(SQLModel, table=True):
     id_playbook: int = Field(foreign_key="playbook.id_playbook")
     orden: int
     descripcion: str
-    funcion_csf: str                                # Detectar | Responder | Recuperar ...
+    funcion_csf: str                                # Responder (incluye el análisis) | Recuperar — la detección es externa
     rol_responsable: str = "operador"
 
 

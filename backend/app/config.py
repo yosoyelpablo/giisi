@@ -18,6 +18,11 @@ BCRYPT_ROUNDS = int(os.getenv("BCRYPT_ROUNDS", "12"))
 LOGIN_MAX_ATTEMPTS = 5
 LOGIN_LOCK_MINUTES = 15
 
+# Clave de la exportación firmada del audit log (HMAC-SHA256). Se custodia FUERA de la base de datos
+# (variable de entorno o gestor de secretos), separada de JWT_SECRET: quien solo accede a la base no puede
+# firmar una referencia externa válida.
+AUDIT_EXPORT_KEY = os.getenv("AUDIT_EXPORT_KEY", "cambiar-en-produccion-clave-de-exportacion")
+
 # Clave compartida que deben presentar las fuentes externas de detección (Wazuh, webhooks).
 WEBHOOK_API_KEY = os.getenv("WEBHOOK_API_KEY", "clave-webhook-desarrollo")
 
