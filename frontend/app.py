@@ -91,7 +91,7 @@ def pantalla_panel():
                     st.markdown(f"**{i['titulo']}**")
                     st.caption(f"{i['categoria'] or '⚠️ a revisar'} · {i['activo'] or '—'}")
                     if st.button("Abrir", key=f"abrir{i['id_incidente']}"):
-                        st.session_state.incidente = i["id_incidente"]; st.session_state.vista = "Detalle"; st.rerun()
+                        st.session_state.incidente = st.session_state.sel_incidente = i["id_incidente"]; st.session_state.vista = "Detalle"; st.rerun()
 
 
 # ---------------------------------------------------------------- detalle (HU-006, HU-007, HU-011)
@@ -100,8 +100,10 @@ def pantalla_detalle():
     if not incs:
         st.info("No hay incidentes registrados."); return
     ids = [i["id_incidente"] for i in incs]
-    actual = st.session_state.get("incidente", ids[0])
-    sel = st.selectbox("Incidente", ids, index=ids.index(actual) if actual in ids else 0,
+    # clave fija: si el valor por defecto cambiara en cada ejecución, Streamlit reiniciaría el selector
+    if st.session_state.get("sel_incidente") not in ids:
+        st.session_state.sel_incidente = st.session_state.get("incidente") if st.session_state.get("incidente") in ids else ids[0]
+    sel = st.selectbox("Incidente", ids, key="sel_incidente",
                        format_func=lambda x: f"INC-{x:03d} · " + next(i["titulo"] for i in incs if i["id_incidente"] == x))
     st.session_state.incidente = sel
     inc = api("GET", f"/incidentes/{sel}").json()
@@ -222,12 +224,13 @@ def pantalla_integridad():
     st.write("Recorre toda la cadena de hashes y recalcula cada registro. Cualquier modificación o eliminación se detecta.")
     if st.button("Verificar ahora", type="primary"):
         r = api("GET", "/auditoria/verificar")
-        if r.status_code == 200:
-            d = r.json()
-            (st.success if d["integra"] else st.error)(f"{'✅ Cadena íntegra' if d['integra'] else '⚠️ Cadena rota'} · "
-                                                        f"{d['registros']} registros" + (f" · último hash {d['ultimo_hash'][:16]}…" if d["integra"] else f" · primer fallo en el registro {d['primer_fallo']}: {d['motivo']}"))
-        else:
+        st.session_state.verificacion = r.json() if r.status_code == 200 else None
+        if r.status_code != 200:
             error(r)
+    if st.session_state.get("verificacion"):
+        d = st.session_state.verificacion
+        (st.success if d["integra"] else st.error)(f"{'✅ Cadena íntegra' if d['integra'] else '⚠️ Cadena rota'} · "
+                                                    f"{d['registros']} registros" + (f" · último hash {d['ultimo_hash'][:16]}…" if d["integra"] else f" · primer fallo en el registro {d['primer_fallo']}: {d['motivo']}"))
 
     st.markdown("### Referencia externa firmada")
     st.write("La cadena de hashes detecta alteraciones, pero quien tenga acceso de escritura a la base podría recalcularla "

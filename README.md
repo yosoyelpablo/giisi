@@ -56,6 +56,14 @@ Usuarios de demostración (contraseña `Giisi!2026demo`, configurable con `SEED_
 python scripts/simular_alerta.py ransomware     # también: acceso | filtracion | phishing
 ```
 
+### Datos de demostración
+
+```bash
+python scripts/poblar_demo.py   # cinco incidentes en distintos estados + una referencia firmada (para capturas y el video)
+```
+
+Las confirmaciones de este script son inmediatas: sus tiempos **no** son mediciones (ver la sección siguiente).
+
 ### Triaje completo en condiciones equivalentes
 
 El motor de reglas propone la categoría y la severidad en centésimas de segundo, pero el triaje termina cuando una

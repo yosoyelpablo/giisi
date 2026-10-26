@@ -1,0 +1,6 @@
+[client]
+# Oculta el botón «Deploy» y el menú de desarrollo de Streamlit
+toolbarMode = "minimal"
+
+[browser]
+gatherUsageStats = false
