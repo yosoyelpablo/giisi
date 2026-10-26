@@ -1,0 +1,7 @@
+modo,escenario,categoria,categoria_correcta,severidad,severidad_correcta,corrigio_propuesta,segundos,incidente
+manual,E6,medios_externos,True,Media,True,,61.1,
+manual,E2,acceso_no_autorizado,True,Crítica,True,,51.0,
+manual,E4,correo,True,Media,True,,43.4,
+manual,E3,filtracion_datos,True,Alta,True,,66.3,
+manual,E1,codigo_malicioso,True,Crítica,True,,37.1,
+manual,E5,desgaste,True,Alta,True,,45.3,

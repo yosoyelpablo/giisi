@@ -1,0 +1,7 @@
+modo,escenario,categoria,categoria_correcta,severidad,severidad_correcta,corrigio_propuesta,segundos,incidente
+prototipo,E3,filtracion_datos,True,Alta,True,False,47.713,7
+prototipo,E1,codigo_malicioso,True,Crítica,True,False,49.481,8
+prototipo,E2,acceso_no_autorizado,True,Crítica,True,False,25.624,9
+prototipo,E6,medios_externos,True,Media,True,False,30.41,10
+prototipo,E5,desgaste,True,Alta,True,False,40.624,11
+prototipo,E4,correo,True,Media,True,False,5.053,12
