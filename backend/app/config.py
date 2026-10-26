@@ -1,4 +1,4 @@
-"""Configuración del prototipo GIISI (Gestión de Incidentes de Seguridad Informática).
+"""Configuración del prototipo GIISI (Gestión Integral de Incidentes de Seguridad Informática).
 
 Todos los valores pueden sobreescribirse por variables de entorno. Los valores por
 defecto permiten ejecutar el sistema y las pruebas sin configuración adicional.

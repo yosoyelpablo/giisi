@@ -20,7 +20,7 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(
-    title="GIISI — Gestión de Incidentes de Seguridad Informática",
+    title="GIISI — Gestión Integral de Incidentes de Seguridad Informática",
     description="Prototipo alineado con NIST SP 800-61 rev. 3 (CSF 2.0) e ISO/IEC 27035. "
                 "Recibe alertas de fuentes externas de detección, las clasifica, calcula su severidad, "
                 "guía la respuesta con playbooks y registra cada acción en un audit log de integridad verificable.",

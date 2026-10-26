@@ -1,6 +1,6 @@
 # GIISI — Sistema de gestión de incidentes de seguridad informática para pequeñas empresas
 
-GIISI es la sigla de **Gestión de Incidentes de Seguridad Informática**.
+GIISI es la sigla de **Gestión Integral de Incidentes de Seguridad Informática**.
 
 Prototipo tecnológico del **Trabajo final de grado** — Licenciatura en Seguridad Informática, Universidad Siglo 21.
 Autor: Pablo Bernal · Tutor: Ing. Esp. Alejandro Pastrán · 2026.
