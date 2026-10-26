@@ -136,6 +136,14 @@ administrador, subida programada de la referencia firmada al almacenamiento inmu
 por un modelo de lenguaje local para los casos «a revisar» (el audit log nunca es escrito por el modelo) y migración de
 la interfaz a React.
 
+## Uso de inteligencia artificial
+
+El autor dirigió el trabajo y tomó las decisiones de alcance, diseño y tecnología, ejecutó personalmente la medición del
+triaje y validó el funcionamiento del sistema. Como herramienta de apoyo, bajo su dirección, se utilizó Claude (Anthropic)
+para generar y revisar código y documentación; por eso figura como coautor en los commits en los que intervino. La
+herramienta no generó ni modificó los datos de la medición (`scripts/resultados/`). El detalle está en la declaración del
+documento final del TFG.
+
 ## Licencia
 
 MIT — el stack completo es de código abierto y no genera costos de licenciamiento.
